@@ -1,7 +1,8 @@
 [package]
 name = "loris"
-version = "0.3.0"
+version = "0.2.3"
 authors = ["Spaceface16518 <33424649+Spaceface16518@users.noreply.github.com>"]
 
 [dependencies]
 rand = "0.5"
+smallvec = "0.6"
