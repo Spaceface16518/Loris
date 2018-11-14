@@ -1,11 +1,17 @@
 extern crate rand;
 
-use rand::{distributions::Standard, Rng};
-use std::iter::Iterator;
+use rand::{distributions::Standard, thread_rng, Rng};
+use std::{default::Default, iter::Iterator};
 
 struct Generator<'a, R: Rng> {
     chunk_size: usize,
     rng: &'a mut R,
+}
+
+impl<'a, R: Rng> Generator<'a, R> {
+    pub fn new(chunk_size: usize, rng: &'a mut R) -> Generator<'a, R> {
+        Generator { chunk_size, rng }
+    }
 }
 
 impl<'a, R: Rng> Iterator for Generator<'a, R> {
