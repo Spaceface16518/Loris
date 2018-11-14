@@ -17,7 +17,7 @@ impl<'a, R: Rng> Iterator for Generator<'a, R> {
             self.rng
                 .sample_iter(&Standard)
                 .take(self.chunk_size)
-                .collect::<Vec<u8>>()
+                .collect::<Vec<u8>>(),
         )
     }
 }
