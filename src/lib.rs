@@ -1,8 +1,9 @@
 extern crate rand;
 
 use rand::{distributions::Standard, thread_rng, Rng};
-use std::{default::Default, iter::Iterator};
+use std::{io::Write, iter::Iterator};
 
+/// A generator made specifically for the `SlowLoris`.
 struct Generator<'a, R: Rng> {
     chunk_size: usize,
     rng: &'a mut R,
