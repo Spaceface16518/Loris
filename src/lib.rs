@@ -1,7 +1,6 @@
 extern crate rand;
 
-use rand::distributions::Standard;
-use rand::Rng;
+use rand::{distributions::Standard, Rng};
 use std::iter::Iterator;
 
 struct Generator<'a, R: Rng> {
