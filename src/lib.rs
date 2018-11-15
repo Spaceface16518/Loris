@@ -34,14 +34,17 @@ impl<'a, R: Rng> Iterator for Generator<'a, R> {
 
 impl<'a, R: Rng> Read for Generator<'a, R> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        // Only go up to the chunk size, or to the limit of the buffer
         let cap = min(buf.len(), self.chunk_size);
+
         // COMBAK: take, enumerate and insert each instead?
-        for i in 0..cap {
-            match self.next() {
-                Some(x) => buf[i] = x[i],
-                _ => (), /* Technically redundant since `Generator` is an
-                          * infinite iterator */
-            }
+        match self.next() {
+            Some(v) => {
+                for i in 0..cap {
+                    buf[i] = v[i]
+                }
+            },
+            _ => (),
         }
         Ok(cap)
     }
