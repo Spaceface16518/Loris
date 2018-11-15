@@ -119,3 +119,21 @@ impl Worker {
     }
 }
 
+// MARK: Job, etc.
+
+type Job = Box<dyn FnBox + Send + 'static>;
+
+enum Message {
+    Execute(Job),
+    Terminate,
+}
+
+trait FnBox {
+    fn call_box(self: Box<Self>);
+}
+
+impl<F: FnOnce()> FnBox for F {
+    fn call_box(self: Box<F>) {
+        (*self)()
+    }
+}
