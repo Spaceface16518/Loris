@@ -75,3 +75,47 @@ impl Drop for ThreadPool {
     }
 }
 
+// MARK: Worker
+
+struct Worker {
+    thread: Option<std_thread::JoinHandle<()>>
+}
+
+impl Worker {
+    pub fn new(
+        id: usize,
+        receiver: Arc<Mutex<mpsc::Receiver<Message>>>,
+    ) -> Worker {
+        // Spawn a thread that loops, looking for messages
+        let thread = std_thread::spawn(move || loop {
+            let message = receiver
+                .lock()
+                .expect("Could not lock receiver")
+                .recv()
+                .expect("Error receiving message");
+            match message {
+                Message::NewJob(job) => {
+                    println!("[Worker {}] Got a job. Executing...", id);
+                    job.call_box();
+                }
+                Message::Terminate => {
+                    println!(
+                        "[Worker {}] Instructed to terminate. Breaking loop...",
+                        id
+                    );
+                    break; // Breaks out of the loop to prevent endless blocking on
+                           // thread join
+                }
+            }
+        });
+        Worker {
+            id,
+            thread: Some(thread),
+        }
+    }
+
+    pub fn id(&self) -> usize {
+        process::id()
+    }
+}
+
