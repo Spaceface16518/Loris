@@ -1,15 +1,11 @@
 extern crate rand;
-extern crate smallvec;
 
 use rand::{distributions::Standard, Rng};
-use smallvec::SmallVec;
 use std::{
     cmp::min,
-    io::{self, BufRead, Read},
+    io::{self, Read},
     iter::Iterator,
 };
-
-const BUF_SIZE: usize = 512;
 
 /// A generator made specifically for the `SlowLoris`.
 struct Generator<'a, R: Rng> {
