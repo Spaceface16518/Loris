@@ -8,12 +8,12 @@ use std::{
 };
 
 /// A generator made specifically for the `SlowLoris`.
-struct Generator<'a, R: Rng> {
+struct Generator<'a, R> {
     chunk_size: usize,
     rng: &'a mut R,
 }
 
-impl<'a, R: Rng> Generator<'a, R> {
+impl<'a, R> Generator<'a, R> {
     pub fn new(chunk_size: usize, rng: &'a mut R) -> Generator<'a, R> {
         Generator { chunk_size, rng }
     }
