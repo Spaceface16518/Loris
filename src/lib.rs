@@ -1,5 +1,7 @@
 extern crate rand;
 
+mod thread;
+
 use rand::{distributions::Standard, Rng};
 use std::{
     cmp::min,
