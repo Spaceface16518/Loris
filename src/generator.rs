@@ -1,6 +1,6 @@
 extern crate rand;
 
-use generator::rand::{distributions::Standard, Rng};
+use self::rand::{distributions::Standard, Rng};
 use std::{
     cmp::min,
     io::{self, Read},
@@ -9,7 +9,7 @@ use std::{
     ops::Index,
 };
 
-struct Generator<'a, R, I> {
+pub struct Generator<'a, R, I> {
     chunk_size: usize,
     rng: &'a mut R,
     _marker: PhantomData<I>,
