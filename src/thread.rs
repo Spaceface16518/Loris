@@ -93,6 +93,7 @@ impl Worker {
         // Spawn a thread that loops, looking for messages
         let thread = std_thread::spawn(move || {
             loop {
+                // Wait for a message to be sent, and then grab it
                 let message = receiver
                     .lock()
                     .expect("Could not lock receiver")
@@ -101,14 +102,14 @@ impl Worker {
                 match message {
                     Message::Execute(job) => {
                         println!(
-                            "[Worker {}] Got a job. Executing...",
+                            "[thread {}] Got a job. Executing...",
                             process::id()
                         );
                         job.call_box();
                     },
                     Message::Terminate => {
                         println!(
-                            "[Worker {}] Instructed to terminate. Breaking \
+                            "[thread {}] Instructed to terminate. Breaking \
                              loop...",
                             process::id()
                         );
