@@ -7,7 +7,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-struct SocketPool<S, F> {
+pub struct SocketPool<S, F> {
     connections: Vec<Connection<S, F>>,
     queue: Arc<Mutex<Queue<Message<Box<[u8]>>>>>,
 }
@@ -49,25 +49,54 @@ impl<S: ToSocketAddrs + Send + 'static + Clone, F: FnOnce() + 'static>
                                                        * lifetime */
         pool: Arc<Mutex<ThreadPool>>,
     ) -> Connection<S, F> {
-        (*pool.lock().expect("Lock failed")).execute(move || {
-            let mut stream = TcpStream::connect(ip)
-                .expect("Failed to initialize connection");
-            loop {
-                // If there's a message in the queue, depending on the type...
-                if let Some(i) = (*queue.lock().unwrap()).pop() {
-                    match i {
-                        // either write its data to the stream...
-                        Message::Data(d) => {
-                            stream
-                                .write(&*d)
-                                .expect("Could not write to stream");
-                        },
-                        // or terminate this connection.
-                        Message::Terminate => break,
+        // (*pool.lock().expect("Lock failed"));
+        match pool.lock() {
+            Ok(i) => {
+                i.execute(move || {
+                    let mut stream = {
+                        let mut loop_count = 0;
+                        loop {
+                            if loop_count > 5 {
+                                println!("Could not connect. Giving up...");
+                                return;
+                            } else {
+                                match TcpStream::connect(ip.clone()) {
+                                    Ok(s) => break s,
+                                    Err(e) => {
+                                        println!(
+                                            "Could not connect. Trying \
+                                             again..."
+                                        );
+                                        loop_count += 1;
+                                    },
+                                }
+                            }
+                        }
+                    };
+                    // TcpStream::connect(ip)
+                    // .expect("Failed to initialize connection");
+                    loop {
+                        // If there's a message in the queue, depending on the
+                        // type...
+                        if let Some(i) = (*queue.lock().unwrap()).pop() {
+                            match i {
+                                // either write its data to the stream...
+                                Message::Data(d) => {
+                                    stream
+                                        .write(&*d)
+                                        .expect("Could not write to stream");
+                                },
+                                // or terminate this connection.
+                                Message::Terminate => break,
+                            }
+                        }
                     }
-                }
-            }
-        });
+                })
+            },
+            Err(e) => (), /* Do nothing for now. If this connection can't get
+                           * a lock, then it can just give up and try again
+                           * (or another connection will try) */
+        }
         Connection {
             _fmarker: PhantomData,
             _smarker: PhantomData,
