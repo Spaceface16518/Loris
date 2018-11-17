@@ -12,8 +12,10 @@ pub struct SocketPool<S, F> {
     queue: Arc<Mutex<Queue<Message<Box<[u8]>>>>>,
 }
 
-impl<S: ToSocketAddrs + Send + 'static + Clone, F: FnOnce() + 'static>
-    SocketPool<S, F>
+impl<S, F> SocketPool<S, F>
+where
+    S: ToSocketAddrs + Send + 'static + Clone,
+    F: FnOnce() + 'static,
 {
     pub fn new(size: usize, ip: S) -> SocketPool<S, F> {
         debug_assert!(size > 0);
@@ -39,8 +41,10 @@ struct Connection<S, F> {
     _smarker: PhantomData<S>,
 }
 
-impl<S: ToSocketAddrs + Send + 'static + Clone, F: FnOnce() + 'static>
-    Connection<S, F>
+impl<S, F> Connection<S, F>
+where
+    S: ToSocketAddrs + Send + 'static + Clone,
+    F: FnOnce() + 'static,
 {
     pub fn new(
         ip: S,
