@@ -60,7 +60,7 @@ impl Default for ThreadPool {
 
 impl Drop for ThreadPool {
     fn drop(&mut self) {
-        println!("Instructing all workers to terminate...");
+        info!("Instructing all workers to terminate...");
         // First send the Terminate message to all the workers
         for _ in 0..self.workers.len() {
             self.sender
@@ -70,7 +70,7 @@ impl Drop for ThreadPool {
 
         // Then join all of the threads/workers into the main thread
         for worker in &mut self.workers {
-            println!("Shutting down worker {}", worker.id());
+            info!("Shutting down worker {}", worker.id());
 
             // `take()` replaces the thread with a None value
             if let Some(thread) = worker.thread.take() {
@@ -101,14 +101,14 @@ impl Worker {
                     .expect("Error receiving message");
                 match message {
                     Message::Execute(job) => {
-                        println!(
+                        info!(
                             "[thread {}] Got a job. Executing...",
                             process::id()
                         );
                         job.call_box();
                     },
                     Message::Terminate => {
-                        println!(
+                        info!(
                             "[thread {}] Instructed to terminate. Breaking \
                              loop...",
                             process::id()

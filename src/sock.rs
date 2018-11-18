@@ -103,16 +103,13 @@ where
                             // Five tries
                             if loop_count > 5 {
                                 // Give up
-                                println!("Could not connect. Giving up...");
+                                error!("Could not connect. Giving up...");
                                 return;
                             } else {
                                 match TcpStream::connect(ip.clone()) {
                                     Ok(s) => break s,
                                     Err(e) => {
-                                        println!(
-                                            "Could not connect. Trying \
-                                             again..."
-                                        );
+                                        warn!("Could not connect. Trying again...");
                                         loop_count += 1;
                                     },
                                 }
