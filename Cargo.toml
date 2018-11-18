@@ -2,7 +2,6 @@
 name = "loris"
 version = "0.5.5"
 authors = ["Spaceface16518 <33424649+Spaceface16518@users.noreply.github.com>"]
-edition = "2018"
 
 [dependencies]
 rand = "0.5"
