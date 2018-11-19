@@ -1,3 +1,6 @@
+extern crate smallvec;
+
+use self::smallvec::SmallVec;
 use super::thread::ThreadPool;
 use std::{
     collections::VecDeque,
@@ -7,8 +10,12 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+const BUF_SIZE: usize = 64;
+const CHUNK_SIZE: usize = 4; // in bytes
+
 pub struct SocketWriter<S, F> {
     pool: SocketPool<S, F>,
+    buf: SmallVec<[u8; BUF_SIZE]>,
 }
 
 impl<S, F> Write for SocketWriter<S, F>
@@ -16,15 +23,29 @@ where
     S: ToSocketAddrs + Send + Clone + 'static,
     F: FnOnce() + 'static,
 {
+    #[inline] // Should this be inlined?
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        for i in 0..buf.len() {
-            // Put all the bytes in `buf` into the queue
-            self.pool.enqueue(Box::new([buf[i]])); // This needs to be optimized, but it'll work
+        self.buf.reserve(buf.len());
+        let mut byte_count = 0;
+        for &byte in buf.iter() {
+            self.buf.push(byte);
+            byte_count += 1;
         }
-        Ok(buf.len())
+        if self.buf.len() > BUF_SIZE {
+            self.flush().expect("Could not flush buffer");
+        }
+        Ok(byte_count)
     }
 
-    fn flush(&mut self) -> io::Result<()> { Ok(()) }
+    #[inline]
+    fn flush(&mut self) -> io::Result<()> {
+        for i in self.buf.windows(CHUNK_SIZE) {
+            // This is expensive; needs to be optimized
+            self.pool.enqueue(i.to_vec().into_boxed_slice());
+        }
+        self.buf.clear();
+        Ok(())
+    }
 }
 
 pub struct SocketPool<S, F> {
@@ -74,6 +95,7 @@ impl<S, F> Drop for SocketPool<S, F> {
         for _ in 0..self.connections.len() {
             (*self.queue.lock().unwrap()).push(Message::Terminate);
         }
+        // TODO: make this work properly
     }
 }
 
@@ -162,10 +184,13 @@ impl<T> Queue<T> {
         }
     }
 
+    #[inline]
     pub fn is_empty(&self) -> bool { self.inner.is_empty() }
 
+    #[inline]
     pub fn pop(&mut self) -> Option<T> { self.inner.pop_front() }
 
+    #[inline]
     pub fn push(&mut self, item: T) { self.inner.push_back(item) }
 }
 

@@ -127,7 +127,7 @@ impl Worker {
     pub fn id(&self) -> u32 { process::id() }
 }
 
-// MARK: Job, etc.
+// MARK: Message passing stuff
 
 type Job = Box<dyn FnBox + Send + 'static>;
 
