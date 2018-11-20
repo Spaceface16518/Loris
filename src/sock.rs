@@ -44,7 +44,7 @@ where
 
     #[inline]
     fn flush(&mut self) -> io::Result<()> {
-        for i in self.buf.windows(CHUNK_SIZE) {
+        for i in self.buf.chunks(CHUNK_SIZE) {
             // This is expensive; needs to be optimized
             self.pool.enqueue(i.to_vec().into_boxed_slice());
         }
