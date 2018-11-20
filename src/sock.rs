@@ -32,7 +32,12 @@ where
             byte_count += 1;
         }
         if self.buf.len() > BUF_SIZE {
-            self.flush().expect("Could not flush buffer");
+            // If there was an error flushing, return that error; otherwise,
+            // just skip to returning the byte count
+            return match self.flush() {
+                Ok(_) => Ok(byte_count),
+                Err(e) => Err(e),
+            };
         }
         Ok(byte_count)
     }
