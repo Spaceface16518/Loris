@@ -131,7 +131,10 @@ where
                                 match TcpStream::connect(ip.clone()) {
                                     Ok(s) => break s,
                                     Err(e) => {
-                                        warn!("Could not connect. Trying again...");
+                                        warn!(
+                                            "Could not connect. Trying \
+                                             again..."
+                                        );
                                         loop_count += 1;
                                     },
                                 }
@@ -150,7 +153,10 @@ where
                                         .expect("Could not write to stream");
                                 },
                                 // or terminate this connection.
-                                Message::Terminate => break, // Should be `return;`?
+                                Message::Terminate => {
+                                    stream.flush();
+                                    return;
+                                },
                             }
                         }
                     }
