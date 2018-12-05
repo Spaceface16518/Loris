@@ -5,11 +5,10 @@ extern crate tokio;
 
 use futures::{Async, Future, Poll, Stream};
 use tokio::{
-    io,
-    net::{ TcpStream},
+    io::{self, Write},
+    net::TcpStream,
     timer::Interval,
 };
-use tokio::io::Write;
 
 use std::time::{Duration, Instant};
 
@@ -24,10 +23,14 @@ fn main() {
             Interval::new(Instant::now(), Duration::from_millis(DELAY))
                 .for_each(|_| {
                     io::write_all(stream, b"keep-alive\n").then(|result| {
-                        println!("wrote keep-alive packet; success: {:?}", result.is_ok());
+                        println!(
+                            "wrote keep-alive packet; success: {:?}",
+                            result.is_ok()
+                        );
                         stream
                     })
-                }).map_err(|e| panic!("Interval errored: {:?}", e))
+                })
+                .map_err(|e| panic!("Interval errored: {:?}", e))
         })
         .map_err(|err| {
             eprintln!("connection error = {:?}", err);
