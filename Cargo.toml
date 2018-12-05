@@ -1,10 +1,11 @@
 [package]
 name = "loris"
-version = "0.5.9"
+version = "0.1.0"
 authors = ["Spaceface16518 <33424649+Spaceface16518@users.noreply.github.com>"]
 
 [dependencies]
 log = "0.4.6"
 num_cpus = "1.8"
 rand = "0.5"
-smallvec = "0.2"
+tokio = "0.1"
+futures = "0.1"
